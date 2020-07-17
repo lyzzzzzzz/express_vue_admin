@@ -27,11 +27,9 @@ export default {
   },
   methods: {},
   created() {
-    localStorage.clear()
-    // localStorage.setItem("user", "lyz");
     let user = localStorage.getItem("user");
     if (!user) {
-      this.$router.replace("/register");
+      this.$router.replace("/auth");
     }
   }
 };

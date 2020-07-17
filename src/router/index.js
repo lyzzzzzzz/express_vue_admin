@@ -32,7 +32,7 @@ const routes = [
   },
 
   {
-    path: "/register",
+    path: "/auth",
     name: 'Register',
     component: Register,
   }

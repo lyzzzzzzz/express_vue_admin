@@ -1,12 +1,17 @@
 <template>
   <div>
     <el-header class="header">
-      <el-button @click="setAddVisible(true)">新增</el-button>
-      <el-button @click="toAddPage(false)">新增2</el-button>
-      <el-button @click="clickUpdate">修改</el-button>
-      <el-button @click="toAddPage(true)">修改2</el-button>
-      <el-popconfirm title="确定删除吗？" style="marginLeft:10px" @onConfirm="clickdelete">
-        <el-button slot="reference">删除</el-button>
+      <div>
+        <el-button @click="setAddVisible(true)">新增</el-button>
+        <el-button @click="toAddPage(false)">新增2</el-button>
+        <el-button @click="clickUpdate">修改</el-button>
+        <el-button @click="toAddPage(true)">修改2</el-button>
+        <el-popconfirm title="确定删除吗？" style="marginLeft:10px" @onConfirm="clickdelete">
+          <el-button slot="reference">删除</el-button>
+        </el-popconfirm>
+      </div>
+      <el-popconfirm title="确定删除吗？" style="marginLeft:10px" @onConfirm="lagout">
+        <span class="lagout" slot="reference">登出</span>
       </el-popconfirm>
     </el-header>
 
@@ -60,13 +65,21 @@ export default {
     this.getAticles();
   },
   methods: {
+    lagout() {
+      localStorage.removeItem('user')
+       localStorage.removeItem('token')
+       this.$router.replace("/auth")
+    },
     toAddPage(isUpdate) {
       if (isUpdate) {
-        if(!this.currentRow){
-           this.$message("请选择修改的项");
-        return;
+        if (!this.currentRow) {
+          this.$message("请选择修改的项");
+          return;
         }
-       this.$router.push({ path: '/articles/create', query: { currentRow:this.currentRow }})
+        this.$router.push({
+          path: "/articles/create",
+          query: { currentRow: this.currentRow }
+        });
       } else {
         this.$router.push("/articles/create");
       }
@@ -77,7 +90,7 @@ export default {
         return;
       }
       this.$http.delete("/articles/" + this.currentRow._id).then(res => {
-        let { message } = res.data;
+        let { message } = res;
         this.$message({
           message,
           type: "success"
@@ -119,7 +132,7 @@ export default {
         method,
         data: this.article
       }).then(res => {
-        let { code, message } = res.data;
+        let { code, message } = res;
         if (code === 80001) {
           this.$message({
             message,
@@ -143,7 +156,7 @@ export default {
     },
     getAticles() {
       this.$http.get("/articles").then(res => {
-        let { code, data } = res.data;
+        let { code, data } = res;
         if (code === 80001) {
           this.tableData = data.reverse();
         }
@@ -162,5 +175,9 @@ body {
 .header {
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>

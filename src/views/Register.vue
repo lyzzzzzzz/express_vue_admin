@@ -1,5 +1,6 @@
 <template>
   <div class="contianer">
+    <h2 style="textAlign:center">{{title}}</h2>
     <el-form
       :model="ruleForm"
       status-icon
@@ -14,18 +15,24 @@
       <el-form-item label="密码" prop="pass">
         <el-input type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
       </el-form-item>
-      <el-form-item label="确认密码" prop="checkPass">
+      <el-form-item label="确认密码" prop="checkPass" v-if="isRegister">
         <el-input type="password" v-model="ruleForm.checkPass" autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="submitForm('ruleForm')">提交</el-button>
+        <el-button type="primary" @click="submitForm('ruleForm')">{{isRegister?'注册':'登录'}}</el-button>
         <el-button @click="resetForm('ruleForm')">重置</el-button>
+        <span style="marginLeft:200px;color:blue" @click="changeStatus">{{!isRegister?'注册':'登录'}}</span>
       </el-form-item>
     </el-form>
   </div>
 </template>
 <script>
 export default {
+  computed: {
+    title() {
+      return this.isRegister ? "注册" : "登录";
+    }
+  },
   data() {
     var validatePass = (rule, value, callback) => {
       if (value === "") {
@@ -64,10 +71,14 @@ export default {
         pass: [{ validator: validatePass, trigger: "blur" }],
         checkPass: [{ validator: validatePass2, trigger: "blur" }],
         name: [{ validator: validateName, trigger: "blur" }]
-      }
+      },
+      isRegister: false
     };
   },
   methods: {
+    changeStatus() {
+      this.isRegister = !this.isRegister;
+    },
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
@@ -75,21 +86,37 @@ export default {
             username: this.ruleForm.name,
             password: this.ruleForm.pass
           };
-          this.$http.post("/users/register", data).then(res => {
-            console.log(res.data);
-            let { code, message, data } = res.data;
+
+          let url = "";
+          if (this.isRegister) {
+            url = "/users/register";
+          } else {
+            url = "/users/login";
+          }
+
+          this.$http.post(url, data).then(res => {
+            let { code, message, user, token } = res;
             if (code === 80001) {
               this.$message({
                 message,
                 type: "success"
               });
-              localStorage.setItem("user", JSON.stringify(data));
+
+              if (!this.isRegister) {
+                localStorage.setItem("user", JSON.stringify(user));
+                localStorage.setItem("token", token);
+                this.$router.push("/articles/index");
+              } else {
+                this.isRegister = false;
+              }
+              // localStorage.setItem("user", JSON.stringify(data));
             } else {
               this.$message({
                 message,
                 type: "error"
               });
             }
+            this.ruleForm = {};
           });
         } else {
           console.log("error submit!!");

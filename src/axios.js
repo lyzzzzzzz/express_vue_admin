@@ -1,8 +1,20 @@
 import axios from 'axios'
 import router from './router'
-import { Message } from 'element-ui'
+import { Message,Loading } from 'element-ui'
 
+let loading
 
+function startLoading() {
+    loading = Loading.service({
+        lock: true,
+        text: '加载中....',
+        background: 'rgba(0, 0, 0, 0.7)'
+    })
+}
+
+function endLoading() {
+    loading.close()
+}
 axios.defaults.baseURL = 'http://localhost:3000/api';
 // 请求超时时间
 axios.defaults.timeout = 10000;
@@ -13,6 +25,7 @@ axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded
 // 请求拦截器
 axios.interceptors.request.use(
   config => {
+    startLoading()
     // 每次发送请求之前判断是否存在token，如果存在，则统一在http请求的header都加上token，不用每次请求都手动添加了
     // 即使本地存在token，也有可能token是过期的，所以在响应拦截器中要对返回状态进行判断
     const token = localStorage.getItem('token');
@@ -26,6 +39,7 @@ axios.interceptors.request.use(
 // 响应拦截器
 axios.interceptors.response.use(
   response => {
+    endLoading()
     if (response.status === 200) {
       return Promise.resolve(response.data);
     } else {
